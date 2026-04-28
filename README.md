@@ -1,6 +1,6 @@
 # @sdw3/lab
 
-Collection of reusable TypeScript utilities.
+Collection of reusable Deno utilities.
 
 ## License
 
