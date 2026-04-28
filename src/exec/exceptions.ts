@@ -2,10 +2,16 @@
  * Exception Failure class
  */
 export class Failure extends Error {
+	exit?: boolean
 	trace?: string
 
-	constructor({ message, trace }: { message?: string; trace?: string } = {}) {
+	constructor({
+		exit,
+		message,
+		trace,
+	}: { exit?: boolean; message?: string; trace?: string } = {}) {
 		super(message)
+		this.exit = exit
 		this.trace = trace
 	}
 }
