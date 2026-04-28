@@ -6,6 +6,7 @@ import { log } from '@internal'
 
 type Props = {
 	fn: (spinner: Spinner) => Promise<void> | void
+	timed?: boolean
 	text: string
 }
 
@@ -20,7 +21,11 @@ type Props = {
  * unexpected `Error`.
  */
 
-export async function runAsyncFunction({ fn, text }: Props): Promise<boolean> {
+export async function runAsyncFunction({
+	fn,
+	timed = true,
+	text,
+}: Props): Promise<boolean> {
 	const spinner = new Spinner({ message: text })
 
 	spinner.start()
@@ -34,11 +39,15 @@ export async function runAsyncFunction({ fn, text }: Props): Promise<boolean> {
 
 		spinner.stop()
 
-		succeed(
-			`${text} (completed ${bold(green('successfully'))} in ${msToTime(
-				end - start
-			)})`
-		)
+		if (timed) {
+			succeed(
+				`${text} (completed ${bold(green('successfully'))} in ${msToTime(
+					end - start
+				)})`
+			)
+		} else {
+			succeed(text)
+		}
 
 		return true
 	} catch (exception) {
