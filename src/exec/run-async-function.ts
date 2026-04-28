@@ -5,21 +5,22 @@ import { Failure, Info, Warning } from '@exec'
 import { log } from '@internal'
 
 type Props = {
-	fn: () => Promise<void> | void
-	onError?: () => void
+	fn: (spinner: Spinner) => Promise<void> | void
 	text: string
 }
 
 /**
- * Run an async function and display the result with the
- * corresponding log level using a spinner
+ * Run an async function and display the result with the corresponding
+ * log level using a spinner.
+ *
+ * Returns `true` on success or when `Info`/`Warning` is thrown,
+ * `false` when a `Failure` without `exit` is thrown.
+ *
+ * Exits the process with code 1 on `Failure({ exit: true })` or any
+ * unexpected `Error`.
  */
 
-export async function runAsyncFunction({
-	fn,
-	onError = () => Deno.exit(1),
-	text,
-}: Props): Promise<void> {
+export async function runAsyncFunction({ fn, text }: Props): Promise<boolean> {
 	const spinner = new Spinner({ message: text })
 
 	spinner.start()
@@ -27,7 +28,7 @@ export async function runAsyncFunction({
 	try {
 		const start = Date.now()
 
-		await fn()
+		await fn(spinner)
 
 		const end = Date.now()
 
@@ -38,15 +39,25 @@ export async function runAsyncFunction({
 				end - start
 			)})`
 		)
+
+		return true
 	} catch (exception) {
 		spinner.stop()
 
 		if (exception instanceof Info) {
 			info(`${text} ${exception.message}`)
-		} else if (exception instanceof Warning) {
+
+			return true
+		}
+
+		if (exception instanceof Warning) {
 			warn(`${text} ${exception.message}`)
-		} else if (exception instanceof Failure) {
-			const { message, trace } = exception
+
+			return true
+		}
+
+		if (exception instanceof Failure) {
+			const { exit, message, trace } = exception
 
 			fail(`${text} ${message || `(${bold(red('error'))} occurred)`}`)
 
@@ -54,15 +65,23 @@ export async function runAsyncFunction({
 				log(`\nError ${white(bold('trace'))}:\n\n${trace}`)
 			}
 
-			onError()
-		} else if (exception instanceof Error) {
+			if (exit) {
+				Deno.exit(1)
+			}
+
+			return false
+		}
+
+		if (exception instanceof Error) {
 			const message =
 				exception.message || `(${bold(red('error'))} occurred)`
 
 			fail(`${text} ${message}`)
 
-			onError()
+			Deno.exit(1)
 		}
+
+		return false
 	}
 }
 
