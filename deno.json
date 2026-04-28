@@ -1,0 +1,9 @@
+{
+	"name": "@sdw3/lab",
+	"version": "0.1.0",
+	"exports": {},
+	"tasks": {
+		"test": "deno test",
+		"check": "deno check ."
+	}
+}
