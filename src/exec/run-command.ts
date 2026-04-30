@@ -4,7 +4,10 @@ type QuoteChar = '"' | "'" | null
  * Process a full command and return the main cmd and the args
  */
 
-function processCommand(command: string) {
+export function processCommand(command: string): {
+	cmd: string
+	args: string[]
+} {
 	const [cmd, ...rest] = command.split(' ')
 
 	const args = []
