@@ -1,6 +1,6 @@
 {
 	"name": "@sdw3/lab",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"exports": {
 		"./path": "./src/path/mod.ts",
 		"./exec": "./src/exec/mod.ts",
