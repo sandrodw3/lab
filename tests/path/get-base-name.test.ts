@@ -23,9 +23,16 @@ Deno.test('getBaseName keeps the name when there is no extension', () => {
 	)
 })
 
-Deno.test('getBaseName only strips the last extension', () => {
+Deno.test('getBaseName strips every trailing extension', () => {
 	assertEquals(
 		getBaseName('/tmp/archive.tar.gz', { removeExtension: true }),
-		'archive.tar'
+		'archive'
+	)
+})
+
+Deno.test('getBaseName preserves leading dot for dotfiles', () => {
+	assertEquals(
+		getBaseName('/tmp/.gitignore', { removeExtension: true }),
+		'.gitignore'
 	)
 })
