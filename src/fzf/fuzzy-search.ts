@@ -5,9 +5,16 @@ import { log } from '@internal'
 
 const ACCENT_COLOR = '#3B919B'
 
+/**
+ * Item presented in the fuzzy-search picker.
+ */
+
 export type ListItem = {
+	/** Stable identifier returned when the item is selected. */
 	id: string
+	/** Display text shown in the picker list. */
 	name: string
+	/** Optional preview text shown above the list when the item is highlighted. */
 	preview?: string
 }
 
