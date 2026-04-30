@@ -60,7 +60,9 @@ function processCommand(command: string) {
 }
 
 /**
- * Execute a bash command and return a promise with the result
+ * Execute a bash command and resolve with its combined stdout and
+ * stderr. Throws if the command exits with a non-zero status, unless
+ * `ignoreError` is set.
  */
 
 async function runCommand(
@@ -71,6 +73,12 @@ async function runCommand(
 	}
 ): Promise<string>
 
+/**
+ * Execute a bash command in spawn mode, inheriting the parent's stdio
+ * so the user sees the command's output live. Resolves with `undefined`
+ * once the process exits.
+ */
+
 async function runCommand(
 	command: string,
 	options: {
@@ -79,6 +87,12 @@ async function runCommand(
 		spawn: true
 	}
 ): Promise<undefined>
+
+/**
+ * Execute a bash command and stream each output line to `processOutput`
+ * as it arrives. Resolves with the full combined output once the
+ * process exits.
+ */
 
 async function runCommand(
 	command: string,
