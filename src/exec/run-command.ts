@@ -78,8 +78,9 @@ async function runCommand(
 
 /**
  * Execute a bash command in spawn mode, inheriting the parent's stdio
- * so the user sees the command's output live. Resolves with `undefined`
- * once the process exits.
+ * so the user sees the command's output live. Throws if the command
+ * exits with a non-zero status, unless `ignoreError` is set. Resolves
+ * with `undefined` once the process exits.
  */
 
 async function runCommand(
@@ -203,8 +204,13 @@ async function runCommand(
 			env: options?.env,
 		})
 
-		const spawn = process.spawn()
-		await spawn.output()
+		const child = process.spawn()
+
+		const status = await child.status
+
+		if (!status.success && !options?.ignoreError) {
+			throw new Error(`Command failed with code ${status.code}`)
+		}
 
 		return
 	}
