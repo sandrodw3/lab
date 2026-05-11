@@ -71,6 +71,7 @@ export function processCommand(command: string): {
 async function runCommand(
 	command: string,
 	options?: {
+		cwd?: string
 		env?: Record<string, string>
 		ignoreError?: boolean
 	}
@@ -86,6 +87,7 @@ async function runCommand(
 async function runCommand(
 	command: string,
 	options: {
+		cwd?: string
 		env?: Record<string, string>
 		ignoreError?: boolean
 		spawn: true
@@ -101,6 +103,7 @@ async function runCommand(
 async function runCommand(
 	command: string,
 	options?: {
+		cwd?: string
 		env?: Record<string, string>
 		ignoreError?: boolean
 		processOutput: (line: string) => void
@@ -110,6 +113,7 @@ async function runCommand(
 async function runCommand(
 	command: string,
 	options?: {
+		cwd?: string
 		env?: Record<string, string>
 		ignoreError?: boolean
 		processOutput?: (line: string) => void
@@ -121,6 +125,7 @@ async function runCommand(
 	if (options?.processOutput) {
 		const process = new Deno.Command(cmd, {
 			args,
+			cwd: options?.cwd,
 			env: options?.env,
 			stdout: 'piped',
 			stderr: 'piped',
@@ -201,6 +206,7 @@ async function runCommand(
 	if (options?.spawn) {
 		const process = new Deno.Command(cmd, {
 			args,
+			cwd: options?.cwd,
 			env: options?.env,
 		})
 
@@ -219,6 +225,7 @@ async function runCommand(
 
 	const process = new Deno.Command(cmd, {
 		args,
+		cwd: options?.cwd,
 		env: options?.env,
 	})
 
