@@ -19,19 +19,7 @@ type Props = {
 }
 
 /**
- * Run an async function and display the result with the corresponding
- * log level using a spinner.
- *
- * Returns `true` on success or when `Info`/`Warning` is thrown,
- * `false` when a `Failure` without `exit` is thrown.
- *
- * Exits the process with code 1 on `Failure({ exit: true })` or any
- * unexpected `Error`.
- *
- * Pass `spinner` to customize the spinner frames and color (as
- * `0xRRGGBB`). When `spinner.color` is set, all styled elements (frames,
- * indicator, decorative flair words) use that color uniformly instead of
- * the default per-level palette.
+ * Run an async function with a spinner and log the result.
  */
 
 export async function runAsyncFunction({
