@@ -1,13 +1,21 @@
-import { blue, bold, green, red, white, yellow } from 'std/colors'
-import { Spinner } from 'std/unstable-spinner'
+import { blue, bold, green, red, rgb24, white, yellow } from 'std/colors'
+import { Spinner as UnstableSpinner } from 'std/unstable-spinner'
 
 import { Failure, Info, Warning } from '@exec'
 import { log } from '@internal'
 
+type Level = 'success' | 'fail' | 'warn' | 'info'
+
+type Spinner = {
+	frames?: string[]
+	color?: number
+}
+
 type Props = {
-	fn: (spinner: Spinner) => Promise<void> | void
+	fn: (spinner: UnstableSpinner) => Promise<void> | void
 	timed?: boolean
 	text: string
+	spinner?: Spinner
 }
 
 /**
@@ -19,14 +27,28 @@ type Props = {
  *
  * Exits the process with code 1 on `Failure({ exit: true })` or any
  * unexpected `Error`.
+ *
+ * Pass `spinner` to customize the spinner frames and color (as
+ * `0xRRGGBB`). When `spinner.color` is set, all styled elements (frames,
+ * indicator, decorative flair words) use that color uniformly instead of
+ * the default per-level palette.
  */
 
 export async function runAsyncFunction({
 	fn,
 	timed = true,
 	text,
+	spinner: config,
 }: Props): Promise<boolean> {
-	const spinner = new Spinner({ message: text })
+	const customColor = config?.color
+
+	const paint = (s: string) =>
+		customColor !== undefined ? rgb24(s, customColor) : s
+
+	const spinner = new UnstableSpinner({
+		message: text,
+		...(config?.frames ? { spinner: config.frames.map(paint) } : {}),
+	})
 
 	spinner.start()
 
@@ -39,28 +61,20 @@ export async function runAsyncFunction({
 
 		spinner.stop()
 
-		if (timed) {
-			succeed(
-				`${text} (completed ${bold(green('successfully'))} in ${msToTime(
-					end - start
-				)})`
-			)
-		} else {
-			succeed(text)
-		}
+		succeed({ text, ms: timed ? end - start : undefined, config })
 
 		return true
 	} catch (exception) {
 		spinner.stop()
 
 		if (exception instanceof Info) {
-			info(`${text} ${exception.message}`)
+			info({ text: `${text} ${exception.message}`, config })
 
 			return true
 		}
 
 		if (exception instanceof Warning) {
-			warn(`${text} ${exception.message}`)
+			warn({ text: `${text} ${exception.message}`, config })
 
 			return true
 		}
@@ -68,7 +82,7 @@ export async function runAsyncFunction({
 		if (exception instanceof Failure) {
 			const { exit, message, trace } = exception
 
-			fail(`${text} ${message || `(${bold(red('error'))} occurred)`}`)
+			fail({ text, message, config })
 
 			if (trace) {
 				log(`\nError ${white(bold('trace'))}:\n\n${trace}`)
@@ -82,10 +96,7 @@ export async function runAsyncFunction({
 		}
 
 		if (exception instanceof Error) {
-			const message =
-				exception.message || `(${bold(red('error'))} occurred)`
-
-			fail(`${text} ${message}`)
+			fail({ text, message: exception.message, config })
 
 			Deno.exit(1)
 		}
@@ -95,35 +106,107 @@ export async function runAsyncFunction({
 }
 
 /**
- * Log success result
+ * Build the colorizer for a given level, respecting the optional custom
+ * color override
  */
 
-function succeed(text: string) {
-	log(`${bold(green('√'))} ${text}`)
+function color(level: Level, config?: Spinner) {
+	const custom = config?.color
+
+	if (custom !== undefined) {
+		return (s: string) => rgb24(s, custom)
+	}
+
+	if (level === 'success') {
+		return green
+	}
+
+	if (level === 'fail') {
+		return red
+	}
+
+	if (level === 'warn') {
+		return yellow
+	}
+
+	return blue
 }
 
 /**
- * Log fail result
+ * Log a successful run with the optional timed flair
  */
 
-function fail(text: string) {
-	log(`${bold(red('X'))} ${text}`)
+function succeed({
+	text,
+	ms,
+	config,
+}: {
+	text: string
+	ms: number | undefined
+	config?: Spinner
+}) {
+	const paint = color('success', config)
+
+	if (ms === undefined) {
+		log(`${bold(paint('√'))} ${paint(text)}`)
+
+		return
+	}
+
+	log(
+		`${bold(paint('√'))} ${paint(`${text} (completed `)}${bold(
+			paint('successfully')
+		)}${paint(` in ${msToTime(ms)})`)}`
+	)
 }
 
 /**
- * Log warning result
+ * Log a failure, with the inline `error` flair when no specific message
+ * was provided
  */
 
-function warn(text: string) {
-	log(`${bold(yellow('!'))} ${text}`)
+function fail({
+	text,
+	message,
+	config,
+}: {
+	text: string
+	message: string | undefined
+	config?: Spinner
+}) {
+	const paint = color('fail', config)
+
+	if (message) {
+		log(`${bold(paint('X'))} ${paint(`${text} ${message}`)}`)
+
+		return
+	}
+
+	log(
+		`${bold(paint('X'))} ${paint(`${text} (`)}${bold(paint('error'))}${paint(
+			' occurred)'
+		)}`
+	)
 }
 
 /**
- * Log info result
+ * Log a warn-level result
  */
 
-function info(text: string) {
-	log(`${bold(blue('i'))} ${text}`)
+function warn({ text, config }: { text: string; config?: Spinner }) {
+	const paint = color('warn', config)
+
+	log(`${bold(paint('!'))} ${paint(text)}`)
+}
+
+/**
+ * Log an info-level result
+ */
+
+function info({ text, config }: { text: string; config?: Spinner }) {
+	const paint = color('info', config)
+
+	log(`${bold(paint('i'))} ${paint(text)}`)
 }
 
 /**
