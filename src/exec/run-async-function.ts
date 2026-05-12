@@ -15,7 +15,7 @@ type Spinner = {
 type Props = {
 	fn: (spinner: UnstableSpinner) => Promise<void> | void
 	timed?: boolean
-	text: string
+	text?: string
 	spinner?: Spinner
 }
 
@@ -26,7 +26,7 @@ type Props = {
 export async function runAsyncFunction({
 	fn,
 	timed = true,
-	text,
+	text = '',
 	spinner: config,
 }: Props): Promise<boolean> {
 	const customColor = config?.color
