@@ -9,6 +9,7 @@ type Level = 'success' | 'fail' | 'warn' | 'info'
 type Spinner = {
 	frames?: string[]
 	color?: number
+	silent?: boolean
 }
 
 type Props = {
@@ -29,6 +30,7 @@ export async function runAsyncFunction({
 	spinner: config,
 }: Props): Promise<boolean> {
 	const customColor = config?.color
+	const silent = config?.silent ?? false
 
 	const paint = (s: string) =>
 		customColor !== undefined ? rgb24(s, customColor) : s
@@ -49,20 +51,26 @@ export async function runAsyncFunction({
 
 		spinner.stop()
 
-		succeed({ text, ms: timed ? end - start : undefined, config })
+		if (!silent) {
+			succeed({ text, ms: timed ? end - start : undefined, config })
+		}
 
 		return true
 	} catch (exception) {
 		spinner.stop()
 
 		if (exception instanceof Info) {
-			info({ text: `${text} ${exception.message}`, config })
+			if (!silent) {
+				info({ text: `${text} ${exception.message}`, config })
+			}
 
 			return true
 		}
 
 		if (exception instanceof Warning) {
-			warn({ text: `${text} ${exception.message}`, config })
+			if (!silent) {
+				warn({ text: `${text} ${exception.message}`, config })
+			}
 
 			return true
 		}
@@ -70,10 +78,12 @@ export async function runAsyncFunction({
 		if (exception instanceof Failure) {
 			const { exit, message, trace } = exception
 
-			fail({ text, message, config })
+			if (!silent) {
+				fail({ text, message, config })
 
-			if (trace) {
-				log(`\nError ${white(bold('trace'))}:\n\n${trace}`)
+				if (trace) {
+					log(`\nError ${white(bold('trace'))}:\n\n${trace}`)
+				}
 			}
 
 			if (exit) {
@@ -84,7 +94,9 @@ export async function runAsyncFunction({
 		}
 
 		if (exception instanceof Error) {
-			fail({ text, message: exception.message, config })
+			if (!silent) {
+				fail({ text, message: exception.message, config })
+			}
 
 			Deno.exit(1)
 		}
