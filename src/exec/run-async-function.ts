@@ -61,7 +61,12 @@ export async function runAsyncFunction({
 
 		if (exception instanceof Info) {
 			if (!silent) {
-				info({ text: `${text} ${exception.message}`, config })
+				info({
+					text: text
+						? `${text} ${exception.message}`
+						: exception.message,
+					config,
+				})
 			}
 
 			return true
@@ -69,7 +74,12 @@ export async function runAsyncFunction({
 
 		if (exception instanceof Warning) {
 			if (!silent) {
-				warn({ text: `${text} ${exception.message}`, config })
+				warn({
+					text: text
+						? `${text} ${exception.message}`
+						: exception.message,
+					config,
+				})
 			}
 
 			return true
@@ -146,17 +156,20 @@ function succeed({
 	config?: Spinner
 }) {
 	const paint = color('success', config)
+	const icon = bold(paint('√'))
 
 	if (ms === undefined) {
-		log(`${bold(paint('√'))} ${paint(text)}`)
+		log(text ? `${icon} ${paint(text)}` : icon)
 
 		return
 	}
 
+	const opening = text ? paint(`${text} (completed `) : paint('(completed ')
+
 	log(
-		`${bold(paint('√'))} ${paint(`${text} (completed `)}${bold(
-			paint('successfully')
-		)}${paint(` in ${msToTime(ms)})`)}`
+		`${icon} ${opening}${bold(paint('successfully'))}${paint(
+			` in ${msToTime(ms)})`
+		)}`
 	)
 }
 
@@ -175,18 +188,19 @@ function fail({
 	config?: Spinner
 }) {
 	const paint = color('fail', config)
+	const icon = bold(paint('X'))
 
 	if (message) {
-		log(`${bold(paint('X'))} ${paint(`${text} ${message}`)}`)
+		const body = text ? `${text} ${message}` : message
+
+		log(`${icon} ${paint(body)}`)
 
 		return
 	}
 
-	log(
-		`${bold(paint('X'))} ${paint(`${text} (`)}${bold(paint('error'))}${paint(
-			' occurred)'
-		)}`
-	)
+	const opening = text ? paint(`${text} (`) : paint('(')
+
+	log(`${icon} ${opening}${bold(paint('error'))}${paint(' occurred)')}`)
 }
 
 /**
@@ -195,8 +209,9 @@ function fail({
 
 function warn({ text, config }: { text: string; config?: Spinner }) {
 	const paint = color('warn', config)
+	const icon = bold(paint('!'))
 
-	log(`${bold(paint('!'))} ${paint(text)}`)
+	log(text ? `${icon} ${paint(text)}` : icon)
 }
 
 /**
@@ -205,8 +220,9 @@ function warn({ text, config }: { text: string; config?: Spinner }) {
 
 function info({ text, config }: { text: string; config?: Spinner }) {
 	const paint = color('info', config)
+	const icon = bold(paint('i'))
 
-	log(`${bold(paint('i'))} ${paint(text)}`)
+	log(text ? `${icon} ${paint(text)}` : icon)
 }
 
 /**
