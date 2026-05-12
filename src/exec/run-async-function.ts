@@ -10,6 +10,7 @@ type Spinner = {
 	frames?: string[]
 	color?: number
 	silent?: boolean
+	interval?: number
 }
 
 type Props = {
@@ -38,6 +39,9 @@ export async function runAsyncFunction({
 	const spinner = new UnstableSpinner({
 		message: text,
 		...(config?.frames ? { spinner: config.frames.map(paint) } : {}),
+		...(config?.interval !== undefined
+			? { interval: config.interval }
+			: {}),
 	})
 
 	spinner.start()
