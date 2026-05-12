@@ -110,8 +110,8 @@ export async function runAsyncFunction({
 }
 
 /**
- * Build the colorizer for a given level, respecting the optional custom
- * color override
+ * Pick the colorizer for the icon: a custom color (if provided) wins
+ * over the level's standard color
  */
 
 function color(level: Level, config?: Spinner) {
@@ -149,19 +149,16 @@ function succeed({
 	ms: number | undefined
 	config?: Spinner
 }) {
-	const paint = color('success', config)
-	const icon = bold(paint('√'))
+	const icon = bold(color('success', config)('√'))
 
 	if (ms === undefined) {
-		log(`${icon} ${paint(text)}`)
+		log(`${icon} ${text}`)
 
 		return
 	}
 
 	log(
-		`${icon} ${paint(`${text} (completed `)}${bold(
-			paint('successfully')
-		)}${paint(` in ${msToTime(ms)})`)}`
+		`${icon} ${text} (completed ${bold(green('successfully'))} in ${msToTime(ms)})`
 	)
 }
 
@@ -179,20 +176,15 @@ function fail({
 	message: string | undefined
 	config?: Spinner
 }) {
-	const paint = color('fail', config)
-	const icon = bold(paint('X'))
+	const icon = bold(color('fail', config)('X'))
 
 	if (message) {
-		log(`${icon} ${paint(`${text} ${message}`)}`)
+		log(`${icon} ${text} ${message}`)
 
 		return
 	}
 
-	log(
-		`${icon} ${paint(`${text} (`)}${bold(paint('error'))}${paint(
-			' occurred)'
-		)}`
-	)
+	log(`${icon} ${text} (${bold(red('error'))} occurred)`)
 }
 
 /**
@@ -200,10 +192,9 @@ function fail({
  */
 
 function warn({ text, config }: { text: string; config?: Spinner }) {
-	const paint = color('warn', config)
-	const icon = bold(paint('!'))
+	const icon = bold(color('warn', config)('!'))
 
-	log(`${icon} ${paint(text)}`)
+	log(`${icon} ${text}`)
 }
 
 /**
@@ -211,10 +202,9 @@ function warn({ text, config }: { text: string; config?: Spinner }) {
  */
 
 function info({ text, config }: { text: string; config?: Spinner }) {
-	const paint = color('info', config)
-	const icon = bold(paint('i'))
+	const icon = bold(color('info', config)('i'))
 
-	log(`${icon} ${paint(text)}`)
+	log(`${icon} ${text}`)
 }
 
 /**
