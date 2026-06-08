@@ -32,17 +32,20 @@ await runAsyncFunction({
 })
 ```
 
-### `@sdw3/lab/fzf`
+### `@sdw3/lab/prompt`
 
-Pick an item from a list using `fzf` as an interactive fuzzy finder.
+Pick a value from a list with an interactive fuzzy search prompt.
 
 ```ts
-import { fuzzySearch } from '@sdw3/lab/fzf'
+import { fuzzySelect } from '@sdw3/lab/prompt'
 
-const id = await fuzzySearch([
-	{ id: '1', name: 'First option', preview: 'Details about the first' },
-	{ id: '2', name: 'Second option' },
-])
+const id = await fuzzySelect({
+	message: 'Pick an option',
+	options: [
+		{ value: '1', label: 'First option', description: 'Details about the first' },
+		{ value: '2', label: 'Second option' },
+	],
+})
 ```
 
 ### `@sdw3/lab/path`

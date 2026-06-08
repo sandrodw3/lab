@@ -18,7 +18,7 @@ several Deno projects.
     - External: `'std/colors'` rather than the full
       `'jsr:@std/fmt@^1.0.8/colors'`. Use caret ranges in the alias target
       so consumers can deduplicate versions
-    - Internal: `'@exec'`, `'@fzf'`, `'@path'`, `'@internal'` instead of
+    - Internal: `'@exec'`, `'@prompt'`, `'@path'`, `'@internal'` instead of
       relative paths. Each alias points to the corresponding `mod.ts`
     - **Exception**: `mod.ts` files (the aggregators) re-export from
       siblings via `'./sibling.ts'` because they cannot import from their
