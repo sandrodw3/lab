@@ -78,6 +78,17 @@ export async function fuzzySelect({
 		protected override async body(): Promise<string> {
 			return `\n${await super.body()}`
 		}
+
+		// Disable the wrap-around: stop at the first/last item instead of
+		// jumping to the opposite end
+
+		protected override selectPrevious(): void {
+			super.selectPrevious(false)
+		}
+
+		protected override selectNext(): void {
+			super.selectNext(false)
+		}
 	}
 
 	const value = await Picker.prompt({
