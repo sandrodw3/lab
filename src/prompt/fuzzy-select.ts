@@ -41,9 +41,21 @@ export async function fuzzySelect({
 	message: string
 	options: SelectOption[]
 }): Promise<string | null> {
-	const descriptions = new Map(
-		options.map((option) => [option.value, option.description])
-	)
+	const seen = new Map<string, number>()
+
+	const items = options.map((option) => {
+		const dup = seen.get(option.label) ?? 0
+
+		seen.set(option.label, dup + 1)
+
+		return {
+			name: option.label,
+			value: `${option.label}${'\0'.repeat(dup)}`,
+			source: option,
+		}
+	})
+
+	const sources = new Map(items.map((item) => [item.value, item.source]))
 
 	// Render every row as if selected so cliffy keeps the text uncolored, then
 	// recolor it ourselves and append the dimmed description
@@ -70,7 +82,7 @@ export async function fuzzySelect({
 				? bold(`${WHITE}${base.replaceAll(RESET, WHITE)}${RESET}`)
 				: base
 
-			const description = descriptions.get(option.value)
+			const description = sources.get(option.value)?.description
 
 			return description ? `${label} ${dim(description)}` : label
 		}
@@ -93,7 +105,7 @@ export async function fuzzySelect({
 
 	const value = await Picker.prompt({
 		message,
-		options: options.map(({ label, value }) => ({ name: label, value })),
+		options: items.map(({ name, value }) => ({ name, value })),
 		listPointer: bold(rgb24('|', ACCENT)),
 		prefix: `${yellow('→')} `,
 		search: true,
@@ -102,5 +114,5 @@ export async function fuzzySelect({
 		maxRows: 12,
 	})
 
-	return value || null
+	return value ? (sources.get(value)?.value ?? null) : null
 }
