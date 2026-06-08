@@ -91,14 +91,22 @@ export async function fuzzySelect({
 			return `\n${await super.body()}`
 		}
 
-		// Disable the wrap-around: stop at the first/last item instead of
-		// jumping to the opposite end
+		// Stay put at the first/last item: no wrap-around, no jump to the
+		// search prompt
 
 		protected override selectPrevious(): void {
+			if (this.listIndex <= 0) {
+				return
+			}
+
 			super.selectPrevious(false)
 		}
 
 		protected override selectNext(): void {
+			if (this.listIndex >= this.options.length - 1) {
+				return
+			}
+
 			super.selectNext(false)
 		}
 	}
