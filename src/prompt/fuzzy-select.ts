@@ -5,9 +5,6 @@ import {
 } from 'cliffy/select'
 import { bold, dim, rgb24, yellow } from 'std/colors'
 
-// cliffy highlights matches with brightBlue (BLUE), closing with RESET. We
-// recolor matches to a pastel green and turn the rest white via WHITE.
-
 const ACCENT = 0xa3d9a5
 const BLUE = '\x1b[94m'
 const RESET = '\x1b[39m'
@@ -66,8 +63,12 @@ export async function fuzzySelect({
 				.getListItemLabel(option, true)
 				.replaceAll(BLUE, GREEN)
 
-			const white = `${WHITE}${base.replaceAll(RESET, WHITE)}${RESET}`
-			const label = isSelected ? bold(white) : white
+			// The active row is white and bold; the rest keep the default
+			// text color, with matches highlighted in either case
+
+			const label = isSelected
+				? bold(`${WHITE}${base.replaceAll(RESET, WHITE)}${RESET}`)
+				: base
 
 			const description = descriptions.get(option.value)
 
