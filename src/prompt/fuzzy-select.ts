@@ -111,6 +111,9 @@ export async function fuzzySelect({
 		}
 	}
 
+	// Render to stderr so stdout stays clean for callers that capture the
+	// selected value (e.g. shell `cd "$(cmd)"` wrappers)
+
 	const value = await Picker.prompt({
 		message,
 		options: items.map(({ name, value }) => ({ name, value })),
@@ -120,6 +123,9 @@ export async function fuzzySelect({
 		searchLabel: '',
 		searchMode: 'all',
 		maxRows: 12,
+		writer: {
+			writeSync: (data: Uint8Array) => Deno.stderr.writeSync(data),
+		},
 	})
 
 	return value ? (sources.get(value)?.value ?? null) : null
