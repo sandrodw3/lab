@@ -42,7 +42,11 @@ import { fuzzySelect } from '@sdw3/lab/prompt'
 const id = await fuzzySelect({
 	message: 'Pick an option',
 	options: [
-		{ value: '1', label: 'First option', description: 'Details about the first' },
+		{
+			value: '1',
+			label: 'First option',
+			description: 'Details about the first',
+		},
 		{ value: '2', label: 'Second option' },
 	],
 })
