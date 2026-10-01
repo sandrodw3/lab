@@ -19,7 +19,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: '20'
+                  node-version-file: '.nvmrc'
                   cache: npm
 
             - name: Install dependencies
@@ -28,21 +28,50 @@ jobs:
             - name: Check formatting
               run: npx prettier --check .
 
-    check:
-        name: check
+    lint:
+        name: lint
         runs-on: ubuntu-latest
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v5
 
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint
+              run: npm run lint
+
+    typecheck:
+        name: typecheck
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+
             - name: Setup Deno
               uses: denoland/setup-deno@v2
               with:
                   deno-version: v2.x
 
+            - name: Install dependencies
+              run: npm ci
+
             - name: Type-check project
-              run: deno task check
+              run: npm run typecheck
 
     test:
         name: test
@@ -52,10 +81,19 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v5
 
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+
             - name: Setup Deno
               uses: denoland/setup-deno@v2
               with:
                   deno-version: v2.x
 
+            - name: Install dependencies
+              run: npm ci
+
             - name: Run tests
-              run: deno task test
+              run: npm test
