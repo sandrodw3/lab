@@ -4,7 +4,9 @@
 	"private": true,
 	"scripts": {
 		"format": "prettier --write .",
-		"lint": "oxlint --deny-warnings"
+		"lint": "oxlint --deny-warnings",
+		"typecheck": "deno check --node-modules-dir=auto .",
+		"test": "deno test"
 	},
 	"devDependencies": {
 		"@trivago/prettier-plugin-sort-imports": "6.0.2",
