@@ -8,6 +8,31 @@ on:
     workflow_dispatch:
 
 jobs:
+    changes:
+        name: changes
+        runs-on: ubuntu-latest
+        outputs:
+            code: ${{ steps.filter.outputs.code }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+
+            - name: Detect changed files
+              id: filter
+              env:
+                  BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+              run: |
+                  files=$(git diff --name-only "$BASE" HEAD) || files=unknown
+
+                  if echo "$files" | grep -qvE '(\.md$|^docs/|^\.vscode/|^\.gitattributes$|^LICENSE$)'; then
+                      echo "code=true" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "code=false" >> "$GITHUB_OUTPUT"
+                  fi
+
     format:
         name: format
         runs-on: ubuntu-latest
@@ -30,6 +55,8 @@ jobs:
 
     lint:
         name: lint
+        needs: changes
+        if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-latest
 
         steps:
@@ -50,6 +77,8 @@ jobs:
 
     typecheck:
         name: typecheck
+        needs: changes
+        if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-latest
 
         steps:
@@ -75,6 +104,8 @@ jobs:
 
     test:
         name: test
+        needs: changes
+        if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-latest
 
         steps:
