@@ -1,70 +1,29 @@
-# CLAUDE.md
+# Lab
 
-Personal collection of reusable TypeScript utilities for Deno, published
-to JSR as `@sdw3/lab`. Centralizes code previously duplicated across
-several Deno projects.
+Personal toolkit of TypeScript utilities for Deno, published to JSR as
+`@sdw3/lab`. One package with a sub-path export per domain (`@sdw3/lab/path`,
+`@sdw3/lab/exec`…), free to use Deno APIs.
+
+Keep this file compact: only what is essential to understand how the project
+works, or a rule too specific to guess.
+
+## Layout
+
+- `src/<domain>/mod.ts` — the public entry of each domain, registered in the
+  `exports` of `deno.json`.
+- `src/internal/` — helpers shared across domains, never exported.
+- `tests/<domain>/` — tests mirroring `src/`.
 
 ## Conventions
 
-- **Deno-targeted**: the package targets Deno as its runtime — the
-  presence of `deno.json` and `deno.lock` declares this explicitly.
-  Utilities may use Deno APIs freely; portability to other runtimes is
-  not a goal
-- **Single JSR package** with sub-path exports by domain
-  (`@sdw3/lab/path`, `@sdw3/lab/exec`, etc.)
-- **All cross-file imports go through aliases** declared in the
-  `imports` map of `deno.json` — no `./` or `../` paths in source files,
-  with one exception (below):
-    - External: `'std/colors'` rather than the full
-      `'jsr:@std/fmt@^1.0.8/colors'`. Use caret ranges in the alias target
-      so consumers can deduplicate versions
-    - Internal: `'@exec'`, `'@prompt'`, `'@path'`, `'@internal'` instead of
-      relative paths. Each alias points to the corresponding `mod.ts`
-    - **Exception**: `mod.ts` files (the aggregators) re-export from
-      siblings via `'./sibling.ts'` because they cannot import from their
-      own alias (self-import)
-- **Versioning**: single version for the whole package. Breaking changes
-  in any utility bump the package version
-- **Stability**: no strong API stability guarantees — this is a personal
-  toolkit first, public second
+**Every import goes through an alias** from `deno.json`: `std/colors`, not the
+full JSR specifier, and `@exec`, `@path`… instead of relative paths. Only a
+`mod.ts` re-exports its siblings with `./`, since it cannot import its own
+alias. External aliases use caret ranges so consumers can deduplicate.
 
-## Structure
+**One version for the whole package**, bumped in `deno.json` with every
+change by semver. Pushing a `v*.*.*` tag publishes to JSR from CI.
 
-- `src/<domain>/mod.ts` — public entry point of each sub-module
-- `src/internal/` — helpers shared across sub-modules, not exported
-- `tests/<domain>/` — tests mirroring `src/`
-- `deno.json` — `exports` map declares each public sub-path
+## Commands
 
-## Adding a new utility
-
-1. Identify the domain (existing or new)
-2. Add the implementation under `src/<domain>/`
-3. Re-export from `src/<domain>/mod.ts`
-4. Register the sub-path in `deno.json` `exports` if it is a new domain
-5. Add tests under `tests/<domain>/`
-6. Bump version in `deno.json` following semver
-
-## After making changes
-
-After finishing any code change requested by the user, always run both
-commands in sequence from the project root:
-
-```
-npm run format
-deno check .
-```
-
-- `npm run format` runs Prettier over the repo to apply the project's
-  formatting (including import sorting via
-  `@trivago/prettier-plugin-sort-imports`).
-- `deno check .` type-checks the whole project.
-
-If either command reports errors, fix them before reporting the task as
-done.
-
-## Publishing
-
-Publication is automated via GitHub Actions on tags matching `v*.*.*`,
-using JSR's OIDC integration. No manual tokens involved.
-
-To release: bump version in `deno.json`, commit, tag, push tag.
+- `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`.
